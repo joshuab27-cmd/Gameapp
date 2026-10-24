@@ -2,10 +2,12 @@
 
 Ein Aufbau-Spiel im Browser: Du übernimmst ein heruntergekommenes Polizeirevier und bringst es auf Vordermann.
 
+Das ganze Revier ist ein großer, animierter Grundriss (Canvas, ohne Emojis): Beamte, Hausmeister und Besucher laufen durch die Räume, Streifenwagen fahren mit Blaulicht zu Einsätzen, und jeder Raum bekommt mit jeder Ausbaustufe mehr Einrichtung.
+
 ## So spielst du
 
-- **Aufräumen:** Tippe auf Müll, Spinnweben, Graffiti & Co. in verwahrlosten Räumen. Das bringt Geld und Erfahrung.
-- **Renovieren:** Ist ein Raum sauber, kannst du ihn renovieren. Danach erwirtschaftet er laufend Budget.
+- **Aufräumen:** Tippe im Grundriss auf Müllsäcke, Spinnweben, Graffiti, Wasserschäden & Co. Das bringt Geld und Erfahrung.
+- **Renovieren:** Ist ein Raum sauber, tippe ihn an und renoviere ihn. Danach erwirtschaftet er laufend Budget.
 - **Ausbauen:** Jeder Raum hat 10 Ausbaustufen – mehr Einnahmen und schnellere Einsätze.
 - **Einsätze:** Renovierte Räume bringen Notrufe. Schick eine Streife los, bevor der Einsatz verfällt – sonst sinkt dein Ruf.
 - **Personal:** Streifenbeamte (mehr parallele Einsätze), Hausmeister (räumen automatisch auf), Verwaltung (+Einnahmen), Kommissar (schnellere, lukrativere Fälle).
