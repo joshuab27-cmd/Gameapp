@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f1d33">
+<!-- GAME:START -->
+<title>Revier 17</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: a station floor plan of room tiles beside a duty desk (cases, staff); stacks to one column on phones. */
+:root {
+  --night: #0f1d33;        /* page ground, police navy at night */
+  --panel: #172a48;        /* desk / panel surface */
+  --line: #2c4670;         /* floor-plan lines */
+  --chalk: #e6edf7;        /* primary text */
+  --muted: #8ea3c4;        /* secondary text */
+  --signal: #3d8bff;       /* Blaulicht accent */
+  --amber: #f2b33d;        /* budget / money */
+  --ok: #4fcf8a;
+  --bad: #ff5d5d;
+  --grime: #3a3326;        /* run-down room tint */
+  --display: "Saira Stencil One", "Impact", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --data: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background-image:
+    linear-gradient(rgba(61,139,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61,139,255,.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-color: var(--night);
+  color: var(--chalk);
+  font: 15px/1.45 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 40px;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 16px; }
+
+/* ---------- header ---------- */
+header.hq {
+  display: grid; gap: 12px;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px 16px;
+  position: relative; overflow: hidden;
+}
+header.hq::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+  background: linear-gradient(90deg, var(--signal) 0 50%, var(--bad) 50% 100%);
+  animation: siren 1.2s infinite;
+}
+@keyframes siren { 50%, 100% { background: linear-gradient(90deg, var(--bad) 0 50%, var(--signal) 50% 100%); } }
+.brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; min-width: 0; }
+.brand h1 {
+  margin: 0; font: 400 clamp(26px, 5vw, 38px)/1 var(--display);
+  letter-spacing: .02em; text-wrap: balance;
+}
+.brand .sub { color: var(--muted); font: 600 12px/1 var(--data); letter-spacing: .14em; text-transform: uppercase; }
+.lvl {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+}
+.lvl .badge {
+  width: 52px; height: 52px; flex: none;
+  display: grid; place-items: center;
+  font: 400 24px/1 var(--display);
+  background: radial-gradient(circle at 50% 35%, #2a4f8c, #14284a);
+  border: 2px solid var(--signal);
+  clip-path: polygon(50% 0, 100% 18%, 92% 80%, 50% 100%, 8% 80%, 0 18%);
+}
+.xpbox { display: grid; gap: 4px; width: 170px; }
+.xpbox small { color: var(--muted); font: 600 12px/1 var(--data); letter-spacing: .08em; text-transform: uppercase; }
+.bar { height: 8px; background: #0b1527; border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--signal); transition: width .25s; }
+.stats {
+  grid-column: 1 / -1;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;
+}
+.stat {
+  background: #0f2140; border: 1px solid var(--line); border-radius: 4px;
+  padding: 8px 10px; min-width: 0;
+}
+.stat b { display: block; font: 700 clamp(17px, 3vw, 22px)/1.1 var(--data); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat span { color: var(--muted); font: 600 11px/1 var(--data); letter-spacing: .1em; text-transform: uppercase; }
+.stat.money b { color: var(--amber); }
+.stars { color: var(--amber); letter-spacing: 1px; }
+.stars .off { color: #3b4b66; }
+
+/* ---------- main layout ---------- */
+.main { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) 360px; align-items: start; }
+h2 {
+  margin: 0 0 10px; font: 700 13px/1 var(--data); letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+}
+h2 em { font-style: normal; color: var(--chalk); letter-spacing: .04em; }
+
+/* ---------- floor plan ---------- */
+.plan {
+  display: grid; gap: 0;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  border: 2px solid var(--line);
+  border-radius: 6px;
+  background: #0c182b;
+}
+.room {
+  position: relative; min-width: 0;
+  border: 1px solid var(--line);
+  margin: -1px 0 0 -1px;
+  padding: 10px 12px 12px;
+  display: grid; gap: 8px;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 12px, transparent 12px 24px),
+    #12223c;
+}
+.room.ruin {
+  background:
+    radial-gradient(circle at 20% 30%, rgba(0,0,0,.35), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(0,0,0,.3), transparent 45%),
+    repeating-linear-gradient(-30deg, rgba(120,100,60,.08) 0 3px, transparent 3px 19px),
+    var(--grime);
+}
+.room.locked { background: repeating-linear-gradient(135deg, #0e1a2e 0 10px, #0b1526 10px 20px); }
+.room.locked > *:not(.lockinfo) { opacity: .35; filter: grayscale(1); }
+.room-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.room-head h3 { margin: 0; font: 700 17px/1.15 var(--data); letter-spacing: .02em; }
+.room-head .state { font: 600 11px/1.3 var(--data); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.room.ruin .state { color: var(--amber); }
+.pips { display: flex; gap: 3px; margin-top: 4px; }
+.pips i { width: 12px; height: 5px; background: #24385a; border-radius: 1px; }
+.pips i.on { background: var(--signal); box-shadow: 0 0 6px rgba(61,139,255,.6); }
+.icon { font-size: 30px; line-height: 1; filter: drop-shadow(0 2px 2px rgba(0,0,0,.5)); }
+.room.ruin .icon { filter: grayscale(.8) sepia(.4) brightness(.8); }
+.floor {
+  position: relative; height: 110px;
+  border: 1px dashed rgba(142,163,196,.25); border-radius: 4px;
+  background:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px) 0 0/22px 22px,
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px) 0 0/22px 22px;
+  overflow: hidden;
+}
+.room.lvlhigh .floor { background-color: rgba(61,139,255,.06); }
+.floor .furn { position: absolute; font-size: 22px; opacity: .9; pointer-events: none; }
+.floor .clean-msg {
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+  font: 600 12px/1.3 var(--data); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; padding: 0 10px;
+  pointer-events: none;
+}
+.mess {
+  position: absolute; width: 44px; height: 44px; border: 0; padding: 0;
+  background: rgba(0,0,0,.25); border-radius: 50%;
+  font-size: 26px; line-height: 44px; text-align: center;
+  transform: translate(-50%, -50%);
+  animation: wobble 2.4s ease-in-out infinite;
+  touch-action: manipulation;
+}
+.mess:hover { background: rgba(242,179,61,.25); }
+.mess:active { transform: translate(-50%, -50%) scale(.85); }
+.mess .hp {
+  position: absolute; right: -2px; top: -2px; min-width: 18px; height: 18px; border-radius: 9px;
+  background: var(--amber); color: #2a1d00; font: 700 11px/18px var(--data); padding: 0 4px;
+}
+@keyframes wobble { 0%,100% { rotate: -4deg; } 50% { rotate: 4deg; } }
+.room-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.income { font: 600 13px/1.2 var(--data); color: var(--muted); font-variant-numeric: tabular-nums; }
+.income b { color: var(--amber); }
+.income .pen { color: var(--bad); }
+.btn {
+  border: 1px solid var(--signal); background: rgba(61,139,255,.15);
+  border-radius: 4px; padding: 7px 12px; font: 700 14px/1.1 var(--data); letter-spacing: .03em;
+  display: inline-flex; gap: 6px; align-items: center; white-space: nowrap;
+}
+.btn:hover:not(:disabled) { background: rgba(61,139,255,.3); }
+.btn:disabled { opacity: .45; cursor: not-allowed; border-color: var(--line); }
+.btn.gold { border-color: var(--amber); background: rgba(242,179,61,.14); }
+.btn.gold:hover:not(:disabled) { background: rgba(242,179,61,.28); }
+.btn.ghost { border-color: var(--line); background: transparent; color: var(--muted); }
+.lockinfo {
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+  font: 700 14px/1.3 var(--data); letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.lockinfo b { display: block; font: 400 22px/1 var(--display); color: var(--chalk); letter-spacing: .02em; margin-top: 4px; }
+
+/* ---------- side desk ---------- */
+.desk { display: grid; gap: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; }
+.case {
+  display: grid; gap: 6px; padding: 10px; border-radius: 4px;
+  background: #0f2140; border-left: 3px solid var(--signal);
+}
+.case + .case { margin-top: 8px; }
+.case.active { border-left-color: var(--ok); }
+.case.urgent { border-left-color: var(--bad); }
+.case-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.case-top strong { font: 700 15px/1.2 var(--data); }
+.case-top small { color: var(--muted); font: 600 11px/1 var(--data); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.case-meta { display: flex; gap: 10px; flex-wrap: wrap; font: 600 13px/1.2 var(--data); color: var(--muted); font-variant-numeric: tabular-nums; }
+.case-meta .r { color: var(--amber); }
+.case .bar { height: 6px; }
+.case.active .bar > i { background: var(--ok); }
+.case.urgent .bar > i { background: var(--bad); }
+.empty { color: var(--muted); font-size: 14px; padding: 6px 0; }
+.staff { display: grid; gap: 8px; }
+.staff-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px; background: #0f2140; border-radius: 4px; }
+.staff-row .ic { font-size: 24px; text-align: center; }
+.staff-row strong { display: block; font: 700 15px/1.2 var(--data); }
+.staff-row small { color: var(--muted); font-size: 12px; line-height: 1.3; display: block; }
+.log { font: 500 13px/1.4 var(--data); color: var(--muted); display: grid; gap: 4px; max-height: 150px; overflow: auto; }
+.log div b { color: var(--chalk); font-weight: 600; }
+.foot { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
+
+/* ---------- overlays ---------- */
+.float {
+  position: fixed; pointer-events: none; z-index: 50;
+  font: 700 16px/1 var(--data); color: var(--amber); text-shadow: 0 1px 2px #000;
+  animation: up 1s ease-out forwards;
+}
+@keyframes up { to { transform: translateY(-46px); opacity: 0; } }
+.toasts { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 6px; width: min(92vw, 380px); }
+.toast { background: #0b1527; border: 1px solid var(--line); border-left: 3px solid var(--signal); padding: 9px 12px; border-radius: 4px; font: 600 14px/1.3 var(--data); animation: tin .25s ease-out; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+.toast.bad { border-left-color: var(--bad); }
+.toast.good { border-left-color: var(--ok); }
+@keyframes tin { from { transform: translateY(10px); opacity: 0; } }
+.modal-bg { position: fixed; inset: 0; z-index: 70; background: rgba(5,10,20,.75); display: grid; place-items: center; padding: 16px; }
+.modal { background: var(--panel); border: 2px solid var(--signal); border-radius: 8px; padding: 22px; max-width: 420px; width: 100%; text-align: center; display: grid; gap: 12px; }
+.modal h3 { margin: 0; font: 400 32px/1 var(--display); }
+.modal p { margin: 0; color: var(--muted); }
+.modal .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.shake { animation: shake .3s; }
+@keyframes shake { 25% { translate: -4px 0; } 75% { translate: 4px 0; } }
+
+@media (max-width: 900px) {
+  .main { grid-template-columns: minmax(0, 1fr); }
+  /* on phones the open cases sit above the floor plan, staff and log below it */
+  .desk { display: contents; }
+  .desk > * { order: 1; }
+  .desk > .cases-card { order: -1; }
+  .room.locked .floor, .room.locked .room-foot, .room.locked .icon { display: none; }
+  .room.locked { min-height: 76px; }
+  .room.locked .lockinfo { inset: 0 12px 0 auto; justify-items: end; }
+}
+@media (max-width: 560px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  header.hq { grid-template-columns: minmax(0, 1fr); }
+  .xpbox { width: auto; flex: 1; }
+  .plan { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="wrap">
+  <header class="hq">
+    <div class="brand">
+      <h1 id="stationName">Polizeirevier 17</h1>
+      <span class="sub">Bring die Wache auf Vordermann</span>
+    </div>
+    <div class="lvl">
+      <div class="badge" id="lvlBadge">1</div>
+      <div class="xpbox">
+        <small id="lvlLabel">Revierstufe 1</small>
+        <div class="bar"><i id="xpBar"></i></div>
+        <small id="xpText">0 / 80 EP</small>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat money"><span>Budget</span><b id="sMoney">0 €</b></div>
+      <div class="stat"><span>Einnahmen</span><b id="sIncome">0 €/s</b></div>
+      <div class="stat"><span>Ruf</span><b id="sRep" class="stars"></b></div>
+      <div class="stat"><span>Gelöste Fälle</span><b id="sSolved">0</b></div>
+    </div>
+  </header>
+
+  <div class="main">
+    <section>
+      <h2>Grundriss <em id="planInfo"></em></h2>
+      <div class="plan" id="plan"></div>
+    </section>
+    <aside class="desk">
+      <div class="card cases-card">
+        <h2>Einsätze <em id="slotInfo"></em></h2>
+        <div id="cases"></div>
+      </div>
+      <div class="card">
+        <h2>Personal</h2>
+        <div class="staff" id="staff"></div>
+      </div>
+      <div class="card">
+        <h2>Funkprotokoll</h2>
+        <div class="log" id="log"></div>
+      </div>
+      <div class="foot">
+        <span id="saveInfo">Spielstand wird automatisch gespeichert.</span>
+        <button class="btn ghost" id="resetBtn" type="button">Neu anfangen</button>
+      </div>
+    </aside>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+<div id="modalRoot"></div>
+
+<script>
+(() => {
+'use strict';
+
+// ---------- data ----------
+const ROOMS = [
+  { id: 'empfang',  name: 'Empfang',              icon: '🛎️', unlock: 1,  cost: 40,      base: 1,    furn: ['🪴','🪑','🖥️'] },
+  { id: 'buero',    name: 'Wachbüro',             icon: '🗂️', unlock: 1,  cost: 150,     base: 3,    furn: ['🖥️','☕','📠'] },
+  { id: 'zellen',   name: 'Gewahrsamszellen',     icon: '🔒', unlock: 2,  cost: 600,     base: 9,    furn: ['🛏️','🚽','🔑'] },
+  { id: 'verhoer',  name: 'Vernehmungsraum',      icon: '🕵️', unlock: 3,  cost: 2000,    base: 24,   furn: ['💡','🎙️','🪞'] },
+  { id: 'fuhrpark', name: 'Fuhrpark',             icon: '🚓', unlock: 4,  cost: 6000,    base: 60,   furn: ['🚓','🏍️','⛽'] },
+  { id: 'asservat', name: 'Asservatenkammer',     icon: '📦', unlock: 6,  cost: 20000,   base: 150,  furn: ['📦','🧾','🔐'] },
+  { id: 'labor',    name: 'Kriminaltechnik',      icon: '🔬', unlock: 8,  cost: 70000,   base: 400,  furn: ['🧪','🧬','🔍'] },
+  { id: 'training', name: 'Einsatztraining',      icon: '🎯', unlock: 10, cost: 220000,  base: 1000, furn: ['🎯','🥋','🛡️'] },
+  { id: 'heli',     name: 'Hubschrauberlandeplatz', icon: '🚁', unlock: 13, cost: 750000, base: 2800, furn: ['🚁','🧭','🛰️'] },
+  { id: 'leit',     name: 'Leitstelle',           icon: '📡', unlock: 16, cost: 2500000, base: 8000, furn: ['📡','🗺️','🖥️'] },
+];
+const MAX_ROOM_LVL = 10;
+
+const MESS = [
+  { e: '🗑️', name: 'Müll',          hp: 1 },
+  { e: '🕸️', name: 'Spinnweben',    hp: 1 },
+  { e: '📄', name: 'Aktenberg',     hp: 2 },
+  { e: '💡', name: 'Kaputte Lampe', hp: 2 },
+  { e: '🎨', name: 'Graffiti',      hp: 3 },
+  { e: '💧', name: 'Wasserschaden', hp: 3 },
+  { e: '🪳', name: 'Kakerlake',     hp: 1 },
+];
+
+const CASES = {
+  empfang:  ['Fundsache abgeben', 'Anzeige: Fahrraddiebstahl', 'Verirrter Tourist'],
+  buero:    ['Ruhestörung', 'Nachbarschaftsstreit', 'Falschparker-Welle'],
+  zellen:   ['Kneipenschlägerei', 'Randale am Bahnhof', 'Betrunkener Autofahrer'],
+  verhoer:  ['Einbruchserie', 'Taschendiebe-Bande', 'Erpressung'],
+  fuhrpark: ['Verfolgungsjagd', 'Illegales Autorennen', 'Unfallflucht'],
+  asservat: ['Drogenfund', 'Hehlerware sichern', 'Waffenfund im Park'],
+  labor:    ['Mordfall Villa Rosen', 'Fingerabdruck-Rätsel', 'DNA-Abgleich'],
+  training: ['Geiselnahme', 'Großeinsatz Fußballspiel', 'Amoklage (Übung)'],
+  heli:     ['Bankraub mit Flucht', 'Vermisstensuche im Wald', 'Schmuggler auf der Autobahn'],
+  leit:     ['Organisierte Kriminalität', 'Cyberangriff auf Rathaus', 'Großfahndung'],
+};
+
+const STAFF = [
+  { id: 'officer', name: 'Streifenbeamte', icon: '👮', base: 120,  mult: 2.1, desc: n => `+1 gleichzeitiger Einsatz · aktuell ${n}` },
+  { id: 'janitor', name: 'Hausmeister',    icon: '🧹', base: 300,  mult: 2.0, desc: n => n ? `räumt alle ${janitorInterval(n).toFixed(1)} s auf` : 'räumt automatisch Unordnung weg' },
+  { id: 'admin',   name: 'Verwaltung',     icon: '🗃️', base: 800,  mult: 2.3, desc: n => `+15 % Einnahmen je Kraft · aktuell +${n * 15} %` },
+  { id: 'chief',   name: 'Kommissar',      icon: '🕴️', base: 5000, mult: 2.6, desc: n => `Einsätze ${n * 12} % schneller, mehr Belohnung` },
+];
+
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+const rand = (a, b) => a + Math.random() * (b - a);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const fmt = n => {
+  n = Math.floor(n);
+  if (n >= 1e9) return (n / 1e9).toLocaleString('de-DE', { maximumFractionDigits: 2 }) + ' Mrd.';
+  if (n >= 1e6) return (n / 1e6).toLocaleString('de-DE', { maximumFractionDigits: 2 }) + ' Mio.';
+  return n.toLocaleString('de-DE');
+};
+const eur = n => fmt(n) + ' €';
+const rate = n => (n < 10 ? n.toLocaleString('de-DE', { maximumFractionDigits: 1 }) : fmt(n)) + ' €/s';
+const xpNeed = l => Math.round(80 * Math.pow(1.55, l - 1));
+const roomIdx = id => ROOMS.findIndex(r => r.id === id);
+const upgradeCost = (r, lvl) => Math.round(r.cost * Math.pow(1.8, lvl));
+const staffCost = (s, n) => Math.round(s.base * Math.pow(s.mult, s.id === 'officer' ? n - 1 : n));
+const janitorInterval = n => Math.max(1.5, 10 / n);
+let uid = 1;
+
+// ---------- state ----------
+const SAVE_KEY = 'revier17-save-v1';
+function freshState() {
+  return {
+    money: 25, xp: 0, level: 1, rep: 20,
+    rooms: {}, staff: { officer: 1, janitor: 0, admin: 0, chief: 0 },
+    cases: [], nextCase: 4, messTimer: 15, janTimer: 0,
+    solved: 0, cleaned: 0, log: [], last: Date.now(), uid: 1,
+  };
+}
+let S;
+
+function makeMess(r, idx) {
+  const kind = Math.floor(Math.random() * Math.min(MESS.length, 3 + idx));
+  return { id: uid++, k: kind, hp: MESS[kind].hp + Math.floor(idx / 3), x: rand(10, 90), y: rand(22, 80) };
+}
+function unlockRooms(silent) {
+  ROOMS.forEach((r, i) => {
+    if (r.unlock <= S.level && !S.rooms[r.id]) {
+      const n = Math.min(6, 3 + Math.floor(i / 2));
+      S.rooms[r.id] = { lvl: 0, mess: Array.from({ length: n }, () => makeMess(r, i)) };
+      if (!silent) log(`<b>${r.name}</b> freigeschaltet – völlig verwahrlost.`);
+    }
+  });
+}
+
+// ---------- economy ----------
+function roomIncome(r, st) {
+  if (!st || st.lvl === 0) return 0;
+  const base = r.base * st.lvl * Math.pow(1.15, st.lvl - 1);
+  const pen = Math.max(0.4, 1 - 0.15 * st.mess.length);
+  return base * pen * globalMult();
+}
+function globalMult() { return (1 + S.staff.admin * 0.15) * (0.5 + S.rep / 100); }
+function totalIncome() { return ROOMS.reduce((s, r) => s + roomIncome(r, S.rooms[r.id]), 0); }
+function gain(money, xp, ev) {
+  S.money += money;
+  if (xp) addXp(xp);
+  if (ev && money) floatText(ev, '+' + eur(money));
+}
+function addXp(x) {
+  S.xp += x;
+  let ups = [];
+  while (S.xp >= xpNeed(S.level)) {
+    S.xp -= xpNeed(S.level);
+    S.level++;
+    ups.push(S.level);
+  }
+  if (ups.length) {
+    const before = Object.keys(S.rooms).length;
+    unlockRooms();
+    const fresh = ROOMS.filter(r => r.unlock > S.level - ups.length && r.unlock <= S.level);
+    S.money += 50 * S.level * S.level;
+    log(`Revier erreicht <b>Stufe ${S.level}</b>!`);
+    showLevelUp(S.level, fresh);
+    if (Object.keys(S.rooms).length !== before) dirty = true;
+  }
+}
+function addRep(d) { S.rep = Math.max(0, Math.min(100, S.rep + d)); }
+
+// ---------- actions ----------
+function hitMess(roomId, messId, ev) {
+  const st = S.rooms[roomId]; if (!st) return;
+  const m = st.mess.find(m => m.id === messId); if (!m) return;
+  m.hp--;
+  const idx = roomIdx(roomId);
+  if (m.hp <= 0) {
+    st.mess = st.mess.filter(x => x !== m);
+    S.cleaned++;
+    const reward = Math.max(2, Math.round(ROOMS[idx].base * (st.lvl ? 4 : 2) + 3));
+    gain(reward, 3 + idx * 2, ev);
+    if (st.lvl === 0 && st.mess.length === 0) toast(`${ROOMS[idx].name} ist aufgeräumt – jetzt renovieren!`, 'good');
+  } else {
+    floatText(ev, '🧽');
+  }
+  dirty = true;
+}
+function upgradeRoom(roomId, btn) {
+  const st = S.rooms[roomId]; const idx = roomIdx(roomId); const r = ROOMS[idx];
+  if (st.lvl === 0 && st.mess.length) { toast('Erst aufräumen! Tippe auf den Dreck im Raum.', 'bad'); btn.classList.add('shake'); setTimeout(() => btn.classList.remove('shake'), 300); return; }
+  if (st.lvl >= MAX_ROOM_LVL) return;
+  const cost = upgradeCost(r, st.lvl);
+  if (S.money < cost) return;
+  S.money -= cost;
+  st.lvl++;
+  addXp(Math.round(10 * Math.pow(cost, 0.36)));
+  addRep(st.lvl === 1 ? 4 : 1);
+  log(st.lvl === 1 ? `<b>${r.name}</b> renoviert.` : `<b>${r.name}</b> auf Stufe ${st.lvl} ausgebaut.`);
+  dirty = true;
+}
+function hire(id) {
+  const s = STAFF.find(s => s.id === id);
+  const cost = staffCost(s, S.staff[id]);
+  if (S.money < cost) return;
+  S.money -= cost; S.staff[id]++;
+  log(`Neue Kraft eingestellt: <b>${s.name}</b>.`);
+  dirty = true;
+}
+function activeCount() { return S.cases.filter(c => c.active).length; }
+function takeCase(cid) {
+  const c = S.cases.find(c => c.id === cid);
+  if (!c || c.active || activeCount() >= S.staff.officer) return;
+  c.active = true; c.t = 0;
+  dirty = true;
+}
+function spawnCase() {
+  const avail = ROOMS.filter(r => S.rooms[r.id] && S.rooms[r.id].lvl > 0);
+  if (!avail.length) return;
+  // weight towards bigger rooms a little
+  const r = avail[Math.min(avail.length - 1, Math.floor(Math.pow(Math.random(), 0.7) * avail.length))];
+  const st = S.rooms[r.id]; const idx = roomIdx(r.id);
+  const speed = 1 - Math.min(0.6, st.lvl * 0.04 + S.staff.chief * 0.12);
+  const dur = Math.round((10 + idx * 5) * speed);
+  const reward = Math.round(r.base * 28 * (1 + st.lvl * 0.2) * (1 + S.staff.chief * 0.1) * rand(0.8, 1.3));
+  S.cases.push({
+    id: uid++, room: r.id, title: pick(CASES[r.id]), dur, reward,
+    xp: Math.round(12 * (idx + 1) * (1 + st.lvl * 0.1)),
+    expire: 50, age: 0, active: false, t: 0,
+  });
+  dirty = true;
+}
+
+// ---------- loop ----------
+let dirty = true, lastTick = performance.now(), saveTimer = 0;
+function step(dt) {
+  S.money += totalIncome() * dt;
+
+  // cases
+  for (const c of S.cases) {
+    if (c.active) {
+      c.t += dt;
+      if (c.t >= c.dur) {
+        c.done = true;
+        S.solved++;
+        gain(c.reward, c.xp);
+        addRep(2);
+        toast(`Fall gelöst: ${c.title} (+${eur(c.reward)})`, 'good');
+        log(`Gelöst: <b>${c.title}</b>`);
+        dirty = true;
+      }
+    } else {
+      c.age += dt;
+      if (c.age >= c.expire) {
+        c.done = true;
+        addRep(-3);
+        toast(`Einsatz verpasst: ${c.title}. Der Ruf leidet.`, 'bad');
+        log(`Verpasst: <b>${c.title}</b>`);
+        dirty = true;
+      }
+    }
+  }
+  S.cases = S.cases.filter(c => !c.done);
+  S.nextCase -= dt;
+  if (S.nextCase <= 0) {
+    if (S.cases.filter(c => !c.active).length < 4) spawnCase();
+    S.nextCase = rand(7, 14) * Math.max(0.5, 1 - S.staff.officer * 0.04);
+  }
+
+  // new mess appears in renovated rooms
+  S.messTimer -= dt;
+  if (S.messTimer <= 0) {
+    S.messTimer = rand(14, 24);
+    ROOMS.forEach((r, i) => {
+      const st = S.rooms[r.id];
+      if (st && st.lvl > 0 && st.mess.length < 4 && Math.random() < 0.35 * (1 - st.lvl * 0.06)) {
+        st.mess.push(makeMess(r, i)); dirty = true;
+      }
+    });
+  }
+  // janitors
+  if (S.staff.janitor > 0) {
+    S.janTimer += dt;
+    const iv = janitorInterval(S.staff.janitor);
+    while (S.janTimer >= iv) {
+      S.janTimer -= iv;
+      const dirtyRooms = ROOMS.filter(r => S.rooms[r.id] && S.rooms[r.id].mess.length);
+      if (!dirtyRooms.length) { S.janTimer = 0; break; }
+      // janitors prefer rooms that already run
+      const run = dirtyRooms.filter(r => S.rooms[r.id].lvl > 0);
+      const r = pick(run.length ? run : dirtyRooms);
+      S.rooms[r.id].mess.shift(); S.cleaned++; dirty = true;
+    }
+  }
+}
+
+function tick(now) {
+  const dt = Math.min(1, (now - lastTick) / 1000);
+  lastTick = now;
+  step(dt);
+  if (dirty) { renderAll(); dirty = false; } else renderLive();
+  saveTimer += dt;
+  if (saveTimer > 5) { save(); saveTimer = 0; }
+  requestAnimationFrame(tick);
+}
+
+// ---------- render ----------
+function stars(rep) {
+  const n = Math.round(rep / 20);
+  return '★'.repeat(n) + `<span class="off">${'★'.repeat(5 - n)}</span>`;
+}
+function renderHeader() {
+  $('sMoney').textContent = eur(S.money);
+  $('sIncome').textContent = rate(totalIncome());
+  $('sRep').innerHTML = stars(S.rep);
+  $('sRep').title = `Ruf ${Math.round(S.rep)} / 100 – beeinflusst alle Einnahmen`;
+  $('sSolved').textContent = fmt(S.solved);
+  $('lvlBadge').textContent = S.level;
+  $('lvlLabel').textContent = `Revierstufe ${S.level}`;
+  const need = xpNeed(S.level);
+  $('xpBar').style.width = Math.min(100, S.xp / need * 100) + '%';
+  $('xpText').textContent = `${fmt(S.xp)} / ${fmt(need)} EP`;
+}
+function renderPlan() {
+  const plan = $('plan');
+  let done = 0, open = 0;
+  plan.innerHTML = '';
+  ROOMS.forEach((r, i) => {
+    const st = S.rooms[r.id];
+    const el = document.createElement('div');
+    el.className = 'room';
+    el.dataset.room = r.id;
+    if (!st) {
+      el.classList.add('locked');
+      el.innerHTML = `<div class="room-head"><div><h3>${r.name}</h3><div class="state">gesperrt</div></div><div class="icon">${r.icon}</div></div><div class="floor"></div><div class="room-foot"><span class="income">–</span></div>
+        <div class="lockinfo"><div>🔒 ab Revierstufe<b>${r.unlock}</b></div></div>`;
+      plan.appendChild(el);
+      return;
+    }
+    open++;
+    if (st.lvl === 0) el.classList.add('ruin'); else done++;
+    if (st.lvl >= 6) el.classList.add('lvlhigh');
+    const pips = Array.from({ length: MAX_ROOM_LVL }, (_, k) => `<i class="${k < st.lvl ? 'on' : ''}"></i>`).join('');
+    const state = st.lvl === 0 ? (st.mess.length ? `verwahrlost · ${st.mess.length}× Dreck` : 'aufgeräumt · bereit') : `Stufe ${st.lvl}${st.lvl >= MAX_ROOM_LVL ? ' · max' : ''}`;
+    const furn = st.lvl > 0 ? r.furn.slice(0, Math.min(3, Math.ceil(st.lvl / 2) + 1)).map((f, k) => `<span class="furn" style="left:${12 + k * 32}%;bottom:8px">${f}</span>`).join('') : '';
+    const msg = st.lvl === 0 && !st.mess.length ? 'Sauber! Bereit zur Renovierung' : '';
+    const mess = st.mess.map(m => `<button class="mess" type="button" data-mess="${m.id}" style="left:${m.x}%;top:${m.y}%" aria-label="${MESS[m.k].name} beseitigen" title="${MESS[m.k].name}">${MESS[m.k].e}${m.hp > 1 ? `<span class="hp">${m.hp}</span>` : ''}</button>`).join('');
+    let btn;
+    if (st.lvl >= MAX_ROOM_LVL) btn = `<button class="btn" type="button" disabled>Voll ausgebaut</button>`;
+    else {
+      const cost = upgradeCost(r, st.lvl);
+      const label = st.lvl === 0 ? 'Renovieren' : 'Ausbauen';
+      btn = `<button class="btn gold" type="button" data-up="${r.id}" data-cost="${cost}">${label} · ${eur(cost)}</button>`;
+    }
+    const inc = roomIncome(r, st);
+    const pen = st.lvl > 0 && st.mess.length ? ` <span class="pen">−${Math.min(60, st.mess.length * 15)} %</span>` : '';
+    el.innerHTML = `
+      <div class="room-head">
+        <div><h3>${r.name}</h3><div class="state">${state}</div><div class="pips">${pips}</div></div>
+        <div class="icon">${r.icon}</div>
+      </div>
+      <div class="floor">${furn}${msg ? `<div class="clean-msg">${msg}</div>` : ''}${mess}</div>
+      <div class="room-foot">
+        <span class="income">${st.lvl ? `<b>${rate(inc)}</b>${pen}` : 'bringt noch nichts ein'}</span>
+        ${btn}
+      </div>`;
+    plan.appendChild(el);
+  });
+  $('planInfo').textContent = `${done} / ${ROOMS.length} Räume in Betrieb`;
+}
+function renderCases() {
+  const box = $('cases');
+  const act = activeCount();
+  $('slotInfo').textContent = `${act} / ${S.staff.officer} Streifen im Einsatz`;
+  if (!S.cases.length) {
+    box.innerHTML = `<div class="empty">${Object.values(S.rooms).some(s => s.lvl > 0) ? 'Funkstille. Neue Einsätze kommen gleich rein …' : 'Renoviere den ersten Raum, dann kommen Notrufe rein.'}</div>`;
+    return;
+  }
+  const sorted = [...S.cases].sort((a, b) => (b.active - a.active) || (b.age - a.age));
+  box.innerHTML = sorted.map(c => {
+    const r = ROOMS[roomIdx(c.room)];
+    const left = c.active ? c.dur - c.t : c.expire - c.age;
+    const urgent = !c.active && left < 15;
+    const pct = c.active ? c.t / c.dur * 100 : (1 - c.age / c.expire) * 100;
+    return `<div class="case ${c.active ? 'active' : ''} ${urgent ? 'urgent' : ''}" data-case="${c.id}">
+      <div class="case-top"><strong>${r.icon} ${c.title}</strong><small data-left>${c.active ? 'läuft' : 'offen'} · ${Math.ceil(left)} s</small></div>
+      <div class="case-meta"><span class="r">${eur(c.reward)}</span><span>+${c.xp} EP</span><span>${r.name}</span><span>Dauer ${c.dur} s</span></div>
+      <div class="bar"><i data-bar style="width:${pct}%"></i></div>
+      ${c.active ? '' : `<button class="btn" type="button" data-take="${c.id}" ${act >= S.staff.officer ? 'disabled' : ''}>${act >= S.staff.officer ? 'Keine Streife frei' : 'Streife losschicken'}</button>`}
+    </div>`;
+  }).join('');
+}
+function renderStaff() {
+  $('staff').innerHTML = STAFF.map(s => {
+    const n = S.staff[s.id];
+    const cost = staffCost(s, n);
+    const locked = (s.id === 'chief' && S.level < 6) || (s.id === 'admin' && S.level < 3) || (s.id === 'janitor' && S.level < 2);
+    return `<div class="staff-row">
+      <div class="ic">${s.icon}</div>
+      <div><strong>${s.name} <span style="color:var(--muted);font-weight:600">× ${n}</span></strong><small>${locked ? 'ab Revierstufe ' + ({ chief: 6, admin: 3, janitor: 2 })[s.id] : s.desc(n)}</small></div>
+      <button class="btn gold" type="button" data-hire="${s.id}" data-cost="${cost}" ${locked ? 'disabled data-locked="1"' : ''}>${eur(cost)}</button>
+    </div>`;
+  }).join('');
+}
+function renderLog() {
+  $('log').innerHTML = S.log.map(l => `<div>${l}</div>`).join('') || '<div>Dienstbeginn. Die Wache ist ein einziges Chaos.</div>';
+}
+function renderAll() { renderHeader(); renderPlan(); renderCases(); renderStaff(); renderLog(); renderLive(); }
+function renderLive() {
+  renderHeader();
+  document.querySelectorAll('[data-cost]').forEach(b => {
+    if (b.dataset.locked) return;
+    b.disabled = S.money < +b.dataset.cost;
+  });
+  // case timers
+  for (const c of S.cases) {
+    const el = document.querySelector(`[data-case="${c.id}"]`);
+    if (!el) { dirty = true; continue; }
+    const left = c.active ? c.dur - c.t : c.expire - c.age;
+    el.querySelector('[data-left]').textContent = `${c.active ? 'läuft' : 'offen'} · ${Math.max(0, Math.ceil(left))} s`;
+    el.querySelector('[data-bar]').style.width = (c.active ? c.t / c.dur * 100 : (1 - c.age / c.expire) * 100) + '%';
+    if (!c.active && left < 15 && !el.classList.contains('urgent')) el.classList.add('urgent');
+  }
+}
+
+// ---------- ui fx ----------
+function floatText(ev, txt) {
+  if (!ev) return;
+  const f = document.createElement('div');
+  f.className = 'float'; f.textContent = txt;
+  f.style.left = (ev.clientX - 20) + 'px'; f.style.top = (ev.clientY - 20) + 'px';
+  document.body.appendChild(f);
+  setTimeout(() => f.remove(), 1000);
+}
+function toast(msg, kind = '') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + kind; t.textContent = msg;
+  const box = $('toasts');
+  box.appendChild(t);
+  while (box.children.length > 3) box.firstChild.remove();
+  setTimeout(() => t.remove(), 3200);
+}
+function log(html) {
+  const d = new Date();
+  const ts = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  S.log.unshift(`${ts} · ${html}`);
+  S.log = S.log.slice(0, 30);
+  dirty = true;
+}
+function modal(html) {
+  const root = $('modalRoot');
+  root.innerHTML = `<div class="modal-bg"><div class="modal">${html}</div></div>`;
+  const close = () => { root.innerHTML = ''; };
+  root.querySelector('.modal-bg').addEventListener('click', e => { if (e.target.classList.contains('modal-bg')) close(); });
+  return { root, close };
+}
+function showLevelUp(lvl, fresh) {
+  const m = modal(`<div style="font-size:44px">🚨</div><h3>Revierstufe ${lvl}</h3>
+    <p>Die Wache wird bekannter. Bonus: <b style="color:var(--amber)">${eur(50 * lvl * lvl)}</b></p>
+    ${fresh.length ? `<p>Neu freigeschaltet: <b style="color:var(--chalk)">${fresh.map(r => r.icon + ' ' + r.name).join(', ')}</b></p>` : ''}
+    <div class="row"><button class="btn gold" type="button" id="mOk">Weiter</button></div>`);
+  m.root.querySelector('#mOk').addEventListener('click', m.close);
+}
+
+// ---------- input ----------
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.mess) { const room = t.closest('.room').dataset.room; hitMess(room, +t.dataset.mess, e); }
+  else if (t.dataset.up) upgradeRoom(t.dataset.up, t);
+  else if (t.dataset.take) takeCase(+t.dataset.take);
+  else if (t.dataset.hire) hire(t.dataset.hire);
+});
+$('resetBtn').addEventListener('click', () => {
+  const m = modal(`<h3>Neu anfangen?</h3><p>Dein gesamter Fortschritt in Revier 17 wird gelöscht.</p>
+    <div class="row"><button class="btn ghost" type="button" id="mNo">Abbrechen</button><button class="btn" type="button" id="mYes" style="border-color:var(--bad)">Alles löschen</button></div>`);
+  m.root.querySelector('#mNo').addEventListener('click', m.close);
+  m.root.querySelector('#mYes').addEventListener('click', () => {
+    m.close(); S = freshState(); uid = 1; unlockRooms(true); try { localStorage.removeItem(SAVE_KEY); } catch (_) {}
+    log('Neuer Dienstantritt in Revier 17.'); dirty = true;
+  });
+});
+
+// ---------- save / load ----------
+function save() {
+  S.last = Date.now(); S.uid = uid;
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (_) {}
+}
+function load(snapshot) {
+  let data = snapshot && snapshot.money !== undefined ? snapshot : null;
+  if (!data) { try { data = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (_) { data = null; } }
+  S = Object.assign(freshState(), data || {});
+  S.staff = Object.assign(freshState().staff, S.staff || {});
+  uid = S.uid || 1;
+  unlockRooms(true);
+  if (!data) { log('Dienstantritt in Revier 17. Hier muss dringend aufgeräumt werden!'); return; }
+  const away = Math.min(2 * 3600, (Date.now() - (S.last || Date.now())) / 1000);
+  if (away > 60) {
+    const earned = totalIncome() * away * 0.5;
+    if (earned > 1) {
+      S.money += earned;
+      const m = modal(`<div style="font-size:44px">🌙</div><h3>Willkommen zurück</h3>
+        <p>Während der Nachtschicht (${Math.round(away / 60)} Min.) hat dein Revier <b style="color:var(--amber)">${eur(earned)}</b> eingenommen.</p>
+        <div class="row"><button class="btn gold" type="button" id="mOk">Dienst antreten</button></div>`);
+      m.root.querySelector('#mOk').addEventListener('click', m.close);
+    }
+  }
+}
+window.addEventListener('pagehide', save);
+document.addEventListener('visibilitychange', () => { if (document.hidden) save(); else lastTick = performance.now(); });
+
+// ---------- boot ----------
+function start(hotData) {
+  load(hotData && hotData.state);
+  renderAll();
+  requestAnimationFrame(t => { lastTick = t; requestAnimationFrame(tick); });
+}
+const hot = window.claude && window.claude.hot;
+if (hot && hot.snapshot) hot.snapshot(() => ({ state: S }));
+if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+})();
+</script>
+<!-- GAME:END -->
+</html>
